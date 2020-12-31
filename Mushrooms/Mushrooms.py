@@ -32,7 +32,7 @@ def exploratory_data_analysis(data, plot_with_target = False, save = False):
             plt.savefig(fname=str(col)+"_count.png")
         plt.show()
 
-def prepocess_data(data, test_size, seed, save = False):
+def prepocess_data(data, test_size, seed):
     X = data[[x for x in list(data.columns) if x not in ["class"]]]
     y = data["class"]
 
@@ -53,7 +53,7 @@ def prepocess_data(data, test_size, seed, save = False):
 
     return X_train, X_test, y_train, y_test
 
-def TPOT(generations, population_size, cv, seed, verbosity):
+def TPOT(generations, population_size, cv, seed, verbosity, save=False):
 
     pipeline_optimizer = TPOTClassifier(generations=generations,
                                         population_size=population_size,
@@ -62,10 +62,10 @@ def TPOT(generations, population_size, cv, seed, verbosity):
                                         verbosity=verbosity)
 
     pipeline_optimizer.fit(X_train, y_train)
-    y_true, y_pred= y_test, model.predict(X_test)
+    y_true, y_pred= y_test, pipeline_optimizer.predict(X_test)
     
     acc = accuracy_score(y_true, y_pred)
-    print("Accuracy on test set: " + str(bal_acc))
+    print("Accuracy on test set: " + str(acc))
 
     cm = confusion_matrix(y_true, y_pred)
     ax = sns.heatmap(cm,
@@ -88,7 +88,7 @@ def TPOT(generations, population_size, cv, seed, verbosity):
 
 random_seed = 191
 data = load_and_check_data('mushrooms.csv')
-#exploratory_data_analysis(data, True, True)
+exploratory_data_analysis(data, True, True)
 X_train, X_test, y_train, y_test = prepocess_data(data, 0.25, random_seed)
 cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=random_seed)
-TPOT(3, 10, cv, random_seed, 3, False)
+TPOT(3, 10, cv, random_seed, 3, True)
